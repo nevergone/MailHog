@@ -2,23 +2,10 @@
 # MailHog Dockerfile
 #
 
-FROM golang:alpine as builder
-
-# Install MailHog:
-RUN apk --no-cache add --virtual build-dependencies \
-    git \
-  && mkdir -p /root/gocode \
-  && export GOPATH=/root/gocode \
-  && go get github.com/nevergone/MailHog \
-  && mv /root/gocode/bin/MailHog /usr/local/bin \
-  && rm -rf /root/gocode \
-  && apk del --purge build-dependencies
-
-## create destination image
 FROM alpine:3.12
 
 # Create mailhog user as non-login system user with user-group
-COPY --from=builder /usr/local/bin/MailHog /usr/local/bin
+COPY --from=mailhog/mailhog:latest /usr/local/bin/MailHog /usr/local/bin
 
 ARG USERNAME=mailhog
 RUN apk update \
