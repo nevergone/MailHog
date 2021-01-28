@@ -7,12 +7,13 @@ FROM golang:alpine as builder
 # Install MailHog:
 RUN apk --no-cache add --virtual build-dependencies \
     git \
+    libpcap \
   && mkdir -p /root/gocode \
   && export GOPATH=/root/gocode \
   && go get github.com/nevergone/MailHog \
   && mv /root/gocode/bin/MailHog /usr/local/bin \
   && rm -rf /root/gocode \
-  && apk del --purge build-dependencies
+  && apk del --purge build-dependencies libpcap
 
 ## create destination image
 FROM alpine:3.12
@@ -28,7 +29,7 @@ RUN apk update \
        shadow \
     && useradd --shell /bin/false -Urb / -u 1000 ${USERNAME} \
     && echo ${USERNAME} > /.unpriv_username \
-    && setcap 'cap_net_bind_service=+ep' /usr/local/bin/MailHog
+    && setcap CAP_NET_BIND_SERVICE=+eip /usr/local/bin/MailHog
 
 # Expose the SMTP and HTTP ports:
 EXPOSE 1025 8025
